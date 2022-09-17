@@ -18,7 +18,11 @@ public class UserRepo implements CrudRepo<UserEntity> {
     @Override
     public UserEntity create(UserEntity entity) {
 
-        return users.put(entity.getId(), entity);
+        UserEntity userEntity = users.put(entity.getId(), entity);
+
+        return users.get(entity.getId());
+
+        //TODO: don't forget about logging
     }
 
     @Override
