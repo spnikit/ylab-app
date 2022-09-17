@@ -5,8 +5,9 @@ import com.edu.ulab.app.entity.UserEntity;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.UserService;
 import com.edu.ulab.app.storage.StorageUtils;
-import com.edu.ulab.app.storage.repositories.impl.BookRepo;
-import com.edu.ulab.app.storage.repositories.impl.UserRepo;
+import com.edu.ulab.app.storage.repositories.UserRepo;
+import com.edu.ulab.app.storage.repositories.impl.BookRepoImpl;
+import com.edu.ulab.app.storage.repositories.impl.UserRepoImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepo userRepo;
 
-    public UserServiceImpl(UserMapper mapper, BookRepo bookRepo, UserRepo userRepo) {
+    public UserServiceImpl(UserMapper mapper, BookRepoImpl bookRepo, UserRepoImpl userRepo) {
         this.userMapper = mapper;
         this.userRepo = userRepo;
     }

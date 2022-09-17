@@ -5,7 +5,8 @@ import com.edu.ulab.app.entity.BookEntity;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.service.BookService;
 import com.edu.ulab.app.storage.StorageUtils;
-import com.edu.ulab.app.storage.repositories.impl.BookRepo;
+import com.edu.ulab.app.storage.repositories.BookRepo;
+import com.edu.ulab.app.storage.repositories.impl.BookRepoImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,8 @@ public class BookServiceImpl implements BookService {
     private final BookRepo bookrepo;
     private final BookMapper bookMapper;
 
-    public BookServiceImpl(BookRepo bookrepo, BookMapper bookMapper) {
-        this.bookrepo = bookrepo;
+    public BookServiceImpl(BookRepoImpl bookRepo, BookMapper bookMapper) {
+        this.bookrepo = bookRepo;
         this.bookMapper = bookMapper;
     }
 

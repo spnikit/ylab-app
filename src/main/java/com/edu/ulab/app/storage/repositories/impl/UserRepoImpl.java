@@ -1,7 +1,7 @@
 package com.edu.ulab.app.storage.repositories.impl;
 
 import com.edu.ulab.app.entity.UserEntity;
-import com.edu.ulab.app.storage.repositories.CrudRepo;
+import com.edu.ulab.app.storage.repositories.UserRepo;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -10,9 +10,9 @@ import java.util.Optional;
 
 
 @Repository
-public class UserRepo implements CrudRepo<UserEntity> {
+public class UserRepoImpl implements UserRepo {
 
-    private Map<Long, UserEntity> users = new HashMap<>();
+    private final Map<Long, UserEntity> users = new HashMap<>();
 
 
     @Override
