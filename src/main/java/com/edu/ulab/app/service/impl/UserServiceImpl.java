@@ -10,6 +10,8 @@ import com.edu.ulab.app.storage.repositories.impl.UserRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,16 +41,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto) {
-        return null;
+
+        UserEntity entity = userMapper.userDtoToUserEntity(userDto);
+
+        UserEntity updatedEnity = userRepo.update(entity);
+
+
+        return userMapper.userEntityToUserDto(updatedEnity);
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        return null;
+
+        Optional<UserEntity> optionalEntity = userRepo.getById(id);
+
+        //TODO: return null or Throw?
+
+        return optionalEntity
+                .map(userMapper::userEntityToUserDto)
+                .orElse(null);
     }
 
     @Override
     public void deleteUserById(Long id) {
-
+        userRepo.deleteById(id);
     }
 }

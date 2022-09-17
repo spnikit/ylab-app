@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public class BookRepo implements CrudRepo<BookEntity> {
 
-    private Map<Long, BookEntity> books = new HashMap<>();
+    private final Map<Long, BookEntity> books = new HashMap<>();
 
     @Override
     public BookEntity create(BookEntity entity) {
@@ -21,13 +21,14 @@ public class BookRepo implements CrudRepo<BookEntity> {
 
     @Override
     public BookEntity update(BookEntity entity) {
-        return books.put(entity.getId(), entity);
+         books.put(entity.getId(), entity);
 
+         return books.get(entity.getId());
     }
 
     @Override
     public Optional<BookEntity> getById(Long id) {
-        return Optional.of(books.get(id));
+        return Optional.ofNullable(books.get(id));
     }
 
     @Override
