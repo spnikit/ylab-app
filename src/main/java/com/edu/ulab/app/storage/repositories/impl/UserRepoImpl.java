@@ -15,6 +15,7 @@ import java.util.Optional;
 @Slf4j
 public class UserRepoImpl implements UserRepo {
 
+    //TODO: pick another type of map Concurrent for example?
     private final Map<Long, UserEntity> users = new HashMap<>();
 
 
