@@ -2,7 +2,6 @@ package com.edu.ulab.app.facade;
 
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.dto.UserDto;
-import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.BookService;
@@ -59,14 +58,79 @@ public class UserDataFacade {
                 .build();
     }
 
-    public UserBookResponse updateUserWithBooks(UserBookRequest userBookRequest) {
-        return null;
+    /*
+     * Выделил для себя следующую логику, пользуясь инфой только из условия задачи:
+     * если приходит обновление пользователя с книгами, то обновляются именно все книги, т.е.
+     * удаляются старые и записываются новые, т.к. идентификаторов книг в Request не содержится.
+     * */
+    public UserBookResponse updateUserWithBooks(Long userId, UserBookRequest userBookRequest) {
+        log.info("Got user book update request:{}, user id: {}, ", userBookRequest, userId);
+        UserDto userDto = userMapper.userRequestToUserDto(userBookRequest.getUserRequest());
+        userDto.setId(userId);
+        log.info("Mapped user request: {}", userDto);
+
+        UserDto updatedUserDto = userService.updateUser(userDto);
+
+
+        log.info("Delete old books of userId: {}", userId);
+
+        bookService.getBooks().stream()
+                .filter(Objects::nonNull)
+                .filter(bookDto -> userId.equals(bookDto.getUserId()))
+                .peek(deleteBookDto -> log.info("Deleted book: {} of the user id: {}", deleteBookDto, userId))
+                .forEach(deleteBookDto -> bookService.deleteBookById(deleteBookDto.getId()));
+
+
+        log.info("Updated userId: {} book list", userId);
+
+        List<Long> bookIdList = userBookRequest.getBookRequests()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(bookMapper::bookRequestToBookDto)
+                .peek(bookDto -> bookDto.setUserId(updatedUserDto.getId()))
+                .peek(mappedBookDto -> log.info("mapped book: {}", mappedBookDto))
+                .map(bookService::createBook)
+                .peek(updatedBook -> log.info("Updated book: {}", updatedBook))
+                .map(BookDto::getId)
+                .toList();
+        log.info("Collected book ids: {}", bookIdList);
+
+
+        return UserBookResponse.builder()
+                .userId(userId)
+                .booksIdList(bookIdList)
+                .build();
     }
 
     public UserBookResponse getUserWithBooks(Long userId) {
-        return null;
+        log.info("Got user book get by id request, user id: {}", userId);
+
+        UserDto userById = userService.getUserById(userId);
+
+        List<Long> bookIdList = bookService.getBooks().stream()
+                .filter(Objects::nonNull)
+                .filter(bookDto -> userId.equals(bookDto.getUserId()))
+                .peek(filteredBookDto -> log.info("Get book: {} of the user id: {}", filteredBookDto, userId))
+                .map(BookDto::getId)
+                .toList();
+
+
+        return UserBookResponse.builder()
+                .userId(userById.getId())
+                .booksIdList(bookIdList)
+                .build();
     }
 
     public void deleteUserWithBooks(Long userId) {
+        log.info("Got user book delete request, user id: {}", userId);
+
+        bookService.getBooks().stream()
+                .filter(Objects::nonNull)
+                .filter(bookDto -> userId.equals(bookDto.getUserId()))
+                .peek(deleteBookDto -> log.info("Deleted book: {} of the user id: {}", deleteBookDto, userId))
+                .forEach(deleteBookDto -> bookService.deleteBookById(deleteBookDto.getId()));
+
+
+        userService.deleteUserById(userId);
     }
 }

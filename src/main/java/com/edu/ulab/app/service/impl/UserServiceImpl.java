@@ -2,11 +2,11 @@ package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.entity.UserEntity;
+import com.edu.ulab.app.exception.StorageException;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.UserService;
 import com.edu.ulab.app.storage.StorageUtils;
 import com.edu.ulab.app.storage.repositories.UserRepo;
-import com.edu.ulab.app.storage.repositories.impl.BookRepoImpl;
 import com.edu.ulab.app.storage.repositories.impl.UserRepoImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepo userRepo;
 
-    public UserServiceImpl(UserMapper mapper, BookRepoImpl bookRepo, UserRepoImpl userRepo) {
+    public UserServiceImpl(UserMapper mapper, UserRepoImpl userRepo) {
         this.userMapper = mapper;
         this.userRepo = userRepo;
     }
@@ -42,13 +42,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto) {
+        UserEntity userEntityToUpdate = userMapper.userDtoToUserEntity(userDto);
 
-        UserEntity entity = userMapper.userDtoToUserEntity(userDto);
+        UserEntity userEntity = userRepo.update(userEntityToUpdate);
 
-        UserEntity updatedEnity = userRepo.update(entity);
-
-
-        return userMapper.userEntityToUserDto(updatedEnity);
+        return userMapper.userEntityToUserDto(userEntity);
     }
 
     @Override
@@ -56,11 +54,10 @@ public class UserServiceImpl implements UserService {
 
         Optional<UserEntity> optionalEntity = userRepo.getById(id);
 
-        //TODO: return null or Throw?
 
         return optionalEntity
                 .map(userMapper::userEntityToUserDto)
-                .orElse(null);
+                .orElseThrow(() -> new StorageException("User with id " + id + " not found"));
     }
 
     @Override
