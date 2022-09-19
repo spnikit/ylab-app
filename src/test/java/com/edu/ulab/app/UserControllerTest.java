@@ -1,8 +1,11 @@
 package com.edu.ulab.app;
 
 
+import com.edu.ulab.app.dto.BookDto;
+import com.edu.ulab.app.dto.UserDto;
+import com.edu.ulab.app.exception.StorageException;
+import com.edu.ulab.app.service.BookService;
 import com.edu.ulab.app.service.UserService;
-import com.edu.ulab.app.web.UserController;
 import com.edu.ulab.app.web.request.BookRequest;
 import com.edu.ulab.app.web.request.UserBookRequest;
 import com.edu.ulab.app.web.request.UserRequest;
@@ -14,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,6 +25,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(UserController.class)
 public class UserControllerTest {
 
 
@@ -39,15 +41,18 @@ public class UserControllerTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BookService bookService;
+
     @Test
     public void contextLoads() {
     }
 
 
-
     @Test
     @SneakyThrows
     public void testCreateUserWithBooks() {
+
 
         UserBookRequest userBookRequest = new UserBookRequest();
 
@@ -87,6 +92,33 @@ public class UserControllerTest {
 
         Assertions.assertNotNull(userService.getUserById(Long.valueOf(id)));
 
+
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDeleteUserWithBooks() {
+
+        UserDto userDto = new UserDto();
+        userDto.setTitle("test");
+        userDto.setAge(33);
+        userDto.setFullName("petrovich");
+        UserDto createdUser = userService.createUser(userDto);
+
+        BookDto bookDto = new BookDto();
+        bookDto.setUserId(createdUser.getId());
+        bookDto.setTitle("book title");
+        bookDto.setAuthor("author petrovich");
+        bookDto.setPageCount(222);
+        BookDto createdBook = bookService.createBook(bookDto);
+
+
+        mockMvc.perform(delete("/api/v1/user/delete/" + createdUser.getId()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        Assertions.assertThrows(StorageException.class, () -> userService.getUserById(userDto.getId()));
+        Assertions.assertThrows(StorageException.class, () -> bookService.getBookById(createdBook.getId()));
 
     }
 }
