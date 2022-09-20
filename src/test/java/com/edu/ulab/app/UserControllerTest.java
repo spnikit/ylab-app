@@ -21,12 +21,11 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -92,6 +91,76 @@ public class UserControllerTest {
 
         Assertions.assertNotNull(userService.getUserById(Long.valueOf(id)));
 
+
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUserWithBooksById() {
+        UserDto userDto = new UserDto();
+        userDto.setTitle("test");
+        userDto.setAge(33);
+        userDto.setFullName("petrovich");
+        UserDto createdUser = userService.createUser(userDto);
+
+        BookDto bookDto = new BookDto();
+        bookDto.setUserId(createdUser.getId());
+        bookDto.setTitle("book title");
+        bookDto.setAuthor("author petrovich");
+        bookDto.setPageCount(222);
+        BookDto createdBook = bookService.createBook(bookDto);
+
+
+        mockMvc.perform(get("/api/v1/user/get/" + createdUser.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId", equalTo(createdUser.getId().intValue())))
+                .andExpect(jsonPath("$.booksIdList", hasSize(1)))
+                .andExpect(jsonPath("$.booksIdList", contains(createdBook.getId().intValue())));
+    }
+
+    @Test
+    @SneakyThrows
+    public void updateUserWithBooks() {
+        UserBookRequest userBookRequest = new UserBookRequest();
+
+
+        UserDto userDto = new UserDto();
+        userDto.setTitle("test");
+        userDto.setAge(33);
+        userDto.setFullName("petrovich");
+        UserDto createdUser = userService.createUser(userDto);
+
+        BookDto bookDto = new BookDto();
+        bookDto.setUserId(createdUser.getId());
+        bookDto.setTitle("book title");
+        bookDto.setAuthor("author petrovich");
+        bookDto.setPageCount(222);
+        bookService.createBook(bookDto);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        UserRequest updatedUserRequest = new UserRequest();
+        updatedUserRequest.setTitle("testUpdated");
+        updatedUserRequest.setAge(66);
+        updatedUserRequest.setFullName("ivanovich");
+
+
+        userBookRequest.setUserRequest(updatedUserRequest);
+        userBookRequest.setBookRequests(Collections.emptyList());
+
+        mockMvc.perform(put("/api/v1/user/update/" + createdUser.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(userBookRequest)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+
+        UserDto userById = userService.getUserById(createdUser.getId());
+
+        Assertions.assertEquals(userById.getTitle(), "testUpdated");
+        Assertions.assertEquals(userById.getAge(), 66);
+        Assertions.assertEquals(userById.getFullName(), "ivanovich");
 
     }
 
