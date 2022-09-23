@@ -3,6 +3,7 @@ package com.edu.ulab.app;
 
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.dto.UserDto;
+import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.service.BookService;
 import com.edu.ulab.app.service.UserService;
 import com.edu.ulab.app.web.request.BookRequest;
@@ -89,9 +90,9 @@ public class UserControllerTest {
                 .andReturn()
                 .getResponse();
 
-//        Integer id = JsonPath.parse(response.getContentAsString()).read("$.userId");
-//
-//        Assertions.assertNotNull(userService.getUserById(Long.valueOf(id)));
+        Integer id = JsonPath.parse(response.getContentAsString()).read("$.userId");
+
+        Assertions.assertNotNull(userService.getUserById(Long.valueOf(id)));
 
 
     }
@@ -174,6 +175,7 @@ public class UserControllerTest {
         userDto.setTitle("test");
         userDto.setAge(33);
         userDto.setFullName("petrovich");
+        userDto.setId(1L);
         UserDto createdUser = userService.createUser(userDto);
 
         BookDto bookDto = new BookDto();
@@ -188,8 +190,8 @@ public class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-//        Assertions.assertThrows(StorageException.class, () -> userService.getUserById(userDto.getId()));
-//        Assertions.assertThrows(StorageException.class, () -> bookService.getBookById(createdBook.getId()));
+        Assertions.assertThrows(NotFoundException.class, () -> userService.getUserById(userDto.getId()));
+        Assertions.assertThrows(NotFoundException.class, () -> bookService.getBookById(createdBook.getId()));
 
     }
 }
