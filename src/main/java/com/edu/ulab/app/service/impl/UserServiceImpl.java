@@ -2,11 +2,15 @@ package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.entity.Person;
+import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.repository.UserRepository;
 import com.edu.ulab.app.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,20 +34,39 @@ public class UserServiceImpl implements UserService {
         return userMapper.personToUserDto(savedUser);
     }
 
+    //Полная замена User на предоставленного нового User, для частичной использовать Patch?
     @Override
     public UserDto updateUser(UserDto userDto) {
-        // реализовать недстающие методы
-        return null;
+
+        Person user = userMapper.userDtoToPerson(userDto);
+        log.info("Updated user: {}", user);
+        userRepository
+                .findByIdForUpdate(user.getId())
+                .orElseThrow(() -> new NotFoundException("User with id: " + userDto.getId() + " not found"));
+
+        Person updatedUser = userRepository.save(user);
+
+        return userMapper.personToUserDto(updatedUser);
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        // реализовать недстающие методы
-        return null;
+
+        Optional<Person> optionalUserById = userRepository.findById(id);
+        return optionalUserById
+                .map(userMapper::personToUserDto)
+                .orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
     }
 
     @Override
     public void deleteUserById(Long id) {
-        // реализовать недстающие методы
+
+        try {
+            userRepository.deleteById(id);
+
+        } catch (EmptyResultDataAccessException exception) {
+            //NOP
+        }
+        log.info("User with id: {} deleted", id);
     }
 }

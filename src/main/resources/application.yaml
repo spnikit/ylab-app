@@ -7,9 +7,16 @@ spring:
       enabled: true
       path: /h2-console
   datasource:
-    url: jdbc:h2:mem:userbook
+    url: jdbc:postgresql://localhost:5432/userbook
     username: test
     password: test
+  jpa:
+    # If we still want to have both Hibernate automatic schema generation
+    # in conjugation with script-based schema creation and data population, we'll have to use
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
 
 server:
   port: 8091

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -55,6 +56,11 @@ public class BookServiceImplTemplate implements BookService {
     @Override
     public BookDto getBookById(Long id) {
         // реализовать недстающие методы
+        return null;
+    }
+
+    @Override
+    public List<BookDto> getBooks() {
         return null;
     }
 
