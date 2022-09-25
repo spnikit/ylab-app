@@ -1,6 +1,7 @@
 package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
+import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.service.UserService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -45,7 +47,12 @@ public class UserServiceImplTemplate implements UserService {
 
         final String UPDATE_SQL = "UPDATE PERSON SET FULL_NAME=?, TITLE=?, AGE=? WHERE ID=?";
 
-        jdbcTemplate.update(UPDATE_SQL, userDto.getFullName(), userDto.getTitle(), userDto.getAge(), userDto.getId());
+        int numberOfRowsUpdated = jdbcTemplate.update(UPDATE_SQL, userDto.getFullName(),
+                userDto.getTitle(), userDto.getAge(), userDto.getId());
+
+        if (numberOfRowsUpdated == 0) {
+            log.info("Update Person, UserDto: {} 0 rows were updated!", userDto);
+        }
 
         return this.getUserById(userDto.getId());
     }
@@ -54,7 +61,8 @@ public class UserServiceImplTemplate implements UserService {
     public UserDto getUserById(Long id) {
         String GET_BY_ID_SQL = "SELECT ID, FULL_NAME, TITLE, AGE FROM PERSON WHERE ID=?";
 
-        return jdbcTemplate.queryForObject(GET_BY_ID_SQL, this::mapRowToUseDto, id);
+        return Optional.ofNullable(jdbcTemplate.queryForObject(GET_BY_ID_SQL, this::mapRowToUseDto, id))
+                .orElseThrow(() -> new NotFoundException("Get User By ID - User with id: " + id + " was not found."));
     }
 
     @Override

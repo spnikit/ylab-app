@@ -1,6 +1,7 @@
 package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.BookDto;
+import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.service.BookService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -53,8 +55,12 @@ public class BookServiceImplTemplate implements BookService {
     public BookDto updateBook(BookDto bookDto) {
         final String UPDATE_SQL = "UPDATE BOOK SET TITLE=?, AUTHOR=?, PAGE_COUNT=?, USER_ID=? WHERE ID=?";
 
-        jdbcTemplate.update(UPDATE_SQL, bookDto.getTitle(), bookDto.getAuthor(), bookDto.getPageCount(),
+        int numberOfRowsUpdated = jdbcTemplate.update(UPDATE_SQL, bookDto.getTitle(), bookDto.getAuthor(), bookDto.getPageCount(),
                 bookDto.getUserId(), bookDto.getId());
+
+        if (numberOfRowsUpdated == 0) {
+            log.info("Update Book, BookDto: {} 0 rows were updated!", bookDto);
+        }
 
         return this.getBookById(bookDto.getId());
     }
@@ -63,7 +69,8 @@ public class BookServiceImplTemplate implements BookService {
     public BookDto getBookById(Long id) {
         String GET_BY_ID_SQL = "SELECT ID, TITLE, AUTHOR, PAGE_COUNT, USER_ID FROM BOOK WHERE ID=?";
 
-        return jdbcTemplate.queryForObject(GET_BY_ID_SQL, BookDto.class, id);
+        return Optional.ofNullable(jdbcTemplate.queryForObject(GET_BY_ID_SQL, BookDto.class, id))
+                .orElseThrow(() -> new NotFoundException("Get Book By ID - Book with id:" + id + " was not found!"));
     }
 
     @Override

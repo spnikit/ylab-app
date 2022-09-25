@@ -61,6 +61,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
 
+        // Читал про несколько подходов обработки случая, когда удаляемый объект по запрашиваему ID не найден,
+        // выбрал молча ловить Exception, не предупреждая пользователя, что объетка не было изначально;
+        // источник информации: Spring in Action 6th edition, Manning, глава 7.1.4
         try {
             userRepository.deleteById(id);
 
