@@ -17,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -69,8 +68,16 @@ public class BookServiceImplTemplate implements BookService {
     public BookDto getBookById(Long id) {
         String GET_BY_ID_SQL = "SELECT ID, TITLE, AUTHOR, PAGE_COUNT, USER_ID FROM BOOK WHERE ID=?";
 
-        return Optional.ofNullable(jdbcTemplate.queryForObject(GET_BY_ID_SQL, BookDto.class, id))
-                .orElseThrow(() -> new NotFoundException("Get Book By ID - Book with id:" + id + " was not found!"));
+        List<BookDto> bookDtoList = jdbcTemplate.query(GET_BY_ID_SQL, this::mapRowToBookDto, id);
+
+        if (bookDtoList.isEmpty()) {
+            throw (new NotFoundException("Get Book By ID - Book with id:" + id + " was not found!"));
+        } else if (bookDtoList.size() == 1) {
+            return bookDtoList.get(0);
+        } else {
+            // list contains more than 1 element
+            throw (new NotFoundException("Get Book By ID - Book with id: " + id + " contains more than 1 book"));
+        }
     }
 
     @Override

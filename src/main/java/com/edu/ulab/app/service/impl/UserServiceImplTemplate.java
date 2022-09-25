@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,6 +23,7 @@ public class UserServiceImplTemplate implements UserService {
     public UserServiceImplTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
 
     @Override
     public UserDto createUser(UserDto userDto) {
@@ -61,8 +62,17 @@ public class UserServiceImplTemplate implements UserService {
     public UserDto getUserById(Long id) {
         String GET_BY_ID_SQL = "SELECT ID, FULL_NAME, TITLE, AGE FROM PERSON WHERE ID=?";
 
-        return Optional.ofNullable(jdbcTemplate.queryForObject(GET_BY_ID_SQL, this::mapRowToUseDto, id))
-                .orElseThrow(() -> new NotFoundException("Get User By ID - User with id: " + id + " was not found."));
+        List<UserDto> userDtoList = jdbcTemplate.query(GET_BY_ID_SQL, this::mapRowToUseDto, id);
+
+        if (userDtoList.isEmpty()) {
+            throw (new NotFoundException("Get Book By ID - Book with id:" + id + " was not found!"));
+        } else if (userDtoList.size() == 1) {
+            return userDtoList.get(0);
+        } else {
+            // list contains more than 1 element
+            throw (new NotFoundException("Get Book By ID - Book with id: " + id + " contains more than 1 book"));
+        }
+
     }
 
     @Override
