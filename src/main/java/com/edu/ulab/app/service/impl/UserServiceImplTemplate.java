@@ -69,7 +69,7 @@ public class UserServiceImplTemplate implements UserService {
         } else if (userDtoList.size() == 1) {
             return userDtoList.get(0);
         } else {
-            // list contains more than 1 element
+            // list contains more than 1 element, unreachable in theory, but who knows?!
             throw (new NotFoundException("Get Book By ID - Book with id: " + id + " contains more than 1 book"));
         }
 
