@@ -1,8 +1,6 @@
 package com.edu.ulab.app.service;
 
-import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.dto.UserDto;
-import com.edu.ulab.app.entity.Book;
 import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.repository.UserRepository;
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -51,7 +48,7 @@ public class UserServiceImplTest {
         person.setTitle("test title");
 
         Person savedPerson  = new Person();
-        savedPerson.setId(1);
+        savedPerson.setId(1L);
         savedPerson.setFullName("test name");
         savedPerson.setAge(11);
         savedPerson.setTitle("test title");

@@ -6,13 +6,11 @@ import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.repository.BookRepository;
 import com.edu.ulab.app.service.impl.BookServiceImpl;
-import com.edu.ulab.app.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -40,7 +38,7 @@ public class BookServiceImplTest {
     void saveBook_Test() {
         //given
         Person person  = new Person();
-        person.setId(1);
+        person.setId(1L);
 
         BookDto bookDto = new BookDto();
         bookDto.setUserId(1L);
@@ -62,7 +60,7 @@ public class BookServiceImplTest {
         book.setPerson(person);
 
         Book savedBook = new Book();
-        savedBook.setId(1);
+        savedBook.setId(1L);
         savedBook.setPageCount(1000);
         savedBook.setTitle("test title");
         savedBook.setAuthor("test author");
