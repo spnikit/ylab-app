@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -170,12 +171,27 @@ public class BookRepositoryTest {
     }
 
 
-
-
-
     // * failed
 
+    @DisplayName("Проброс Exception при удалении книги с неверным id.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void throwWhenDeleteBookWithNonExistentId() {
 
+        // Then
 
-    // example failed test
+        try {
+
+            bookRepository.deleteById(666L);
+
+        } catch (EmptyResultDataAccessException exception) {
+
+            assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
+        }
+    }
+
 }
