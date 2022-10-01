@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -36,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto) {
-        Person user = userMapper.userDtoToPerson(userDto);
+        Person user = userMapper.userDtoToPerson(Objects.requireNonNull(userDto, "userDto не может быть null"));
         log.info("Updated user: {}", user);
         userRepository
                 .findByIdForUpdate(user.getId())
@@ -59,7 +60,6 @@ public class UserServiceImpl implements UserService {
     public void deleteUserById(Long id) {
         try {
             userRepository.deleteById(id);
-
         } catch (EmptyResultDataAccessException exception) {
             //NOP
         }

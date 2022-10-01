@@ -10,6 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "person", schema = "ulab_edu")
 public class Person {

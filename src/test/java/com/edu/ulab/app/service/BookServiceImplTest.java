@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,6 +83,16 @@ public class BookServiceImplTest {
         //then
         BookDto bookDtoResult = bookService.createBook(bookDto);
         assertEquals(1L, bookDtoResult.getId());
+    }
+
+
+    // failed save
+    @Test
+    @DisplayName("Обновленипе книги c null. Должно выбросить ошибку")
+    void saveBookWithNull_Test(){
+
+        assertThatThrownBy(() -> bookService.updateBook(null))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -195,6 +206,18 @@ public class BookServiceImplTest {
         assertThat(bookService.getBooks().size()).isEqualTo(1);
     }
 
+    // failed getAll
+    @Test
+    @DisplayName("Получение всех книги c ошибкой. Должно выбросить ошибку")
+    void getBooksWithThrow_Test(){
+        // when
+        when(bookRepository.findAll()).thenThrow(NullPointerException.class);
+
+        // then
+        assertThatThrownBy(() -> bookService.getBooks())
+                .isInstanceOf(NullPointerException.class);
+    }
+
     // delete
     @Test
     @DisplayName("Удаление книги.")
@@ -208,5 +231,4 @@ public class BookServiceImplTest {
         // then
         verify(bookRepository).deleteById(1L);
     }
-
 }

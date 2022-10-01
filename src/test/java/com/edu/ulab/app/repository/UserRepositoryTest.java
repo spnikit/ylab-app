@@ -4,15 +4,17 @@ import com.edu.ulab.app.config.SystemJpaTest;
 import com.edu.ulab.app.entity.Person;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.jdbc.Sql;
 
 import static com.vladmihalcea.sql.SQLStatementCountValidator.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Тесты репозитория {@link UserRepository}.
@@ -27,7 +29,7 @@ public class UserRepositoryTest {
         SQLStatementCountValidator.reset();
     }
 
-    @DisplayName("Сохранить юзера. Число select должно равняться 1")
+    @DisplayName("Сохранить пользователя. Число select должно равняться 1")
     @Test
     @Rollback
     @Sql({"classpath:sql/1_clear_schema.sql",
@@ -53,7 +55,7 @@ public class UserRepositoryTest {
     }
 
 
-    @DisplayName("Обновить Person. Число update должно равняться 1")
+    @DisplayName("Обновить пользователя. Число update должно равняться 1")
     @Test
     @Rollback
     @Sql({"classpath:sql/1_clear_schema.sql",
@@ -84,9 +86,27 @@ public class UserRepositoryTest {
 
     }
 
+
+    // failed update
+    @DisplayName("Обновить пользователя значением null. Должно выбросить ошибку.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void updatePersonWithNull(){
+        // when
+        Throwable throwable = catchThrowable(() -> userRepository.save(null));
+
+        // then
+        assertThat(throwable)
+                .isInstanceOf(InvalidDataAccessApiUsageException.class)
+                .hasRootCauseInstanceOf(IllegalArgumentException.class);
+    }
+
     // get
-    @Disabled
-    @DisplayName("Получить Person. Число select должно равняться 1")
+    @DisplayName("Получить пользователя. Число select должно равняться 1")
     @Test
     @Rollback
     @Sql({"classpath:sql/1_clear_schema.sql",
@@ -109,12 +129,28 @@ public class UserRepositoryTest {
         assertDeleteCount(0);
     }
 
+    // failed get
+    @DisplayName("Получить пользователя с id, который равен null. Должно выбросить ошибку")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void getPersonWithIdThanDoesntExist(){
 
+        // when
+        Throwable throwable = catchThrowable(() -> userRepository.findById(null));
+
+        // then
+        assertThat(throwable)
+                .isInstanceOf(InvalidDataAccessApiUsageException.class)
+                .hasMessageContaining("id");
+    }
 
 
     // delete
-    @Disabled
-    @DisplayName("Удалить книгу. Число delete должно равняться 1")
+    @DisplayName("Удалить пользователя. Число delete должно равняться 1")
     @Test
     @Rollback
     @Sql({"classpath:sql/1_clear_schema.sql",
@@ -127,19 +163,29 @@ public class UserRepositoryTest {
         // When
         userRepository.deleteById(1001L);
 
-       // Then
-
-
+        // Then
         assertSelectCount(1);
         assertInsertCount(0);
         assertUpdateCount(0);
         assertDeleteCount(0);
     }
 
-    // update
-    // get
-    // get all
-    // delete
 
-    // * failed
+    // failed delete
+    @DisplayName("Удалить пользователя с id, которого не существует. Должно выбросить ошибку")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void deletePersonWithIdThatDoesntExist() {
+
+        // When
+        Throwable throwable = catchThrowable(() -> userRepository.deleteById(666L));
+        // Then
+        assertThat(throwable).isInstanceOf(EmptyResultDataAccessException.class);
+    }
+
+
 }

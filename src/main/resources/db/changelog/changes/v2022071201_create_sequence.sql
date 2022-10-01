@@ -1,1 +1,1 @@
-create sequence sequence;
+create sequence if not exists sequence;

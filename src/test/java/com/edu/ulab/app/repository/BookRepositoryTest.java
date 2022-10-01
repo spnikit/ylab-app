@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.vladmihalcea.sql.SQLStatementCountValidator.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Тесты репозитория {@link BookRepository}.
@@ -41,7 +42,6 @@ public class BookRepositoryTest {
     })
     void findAllBadges_thenAssertDmlCount() {
         //Given
-
         Person person = new Person();
         person.setAge(111);
         person.setTitle("reader");
@@ -68,7 +68,6 @@ public class BookRepositoryTest {
     }
 
     // update
-
     @DisplayName("Обновить книгу. Число update должно равняться 1")
     @Test
     @Rollback
@@ -99,6 +98,22 @@ public class BookRepositoryTest {
 
     }
 
+    // failed update
+    @DisplayName("Обновить книгу c null. Должно выбросить ошибку.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void updateBookWithNull() {
+        // when
+        Throwable throwable = catchThrowable(() -> bookRepository.save(null));
+
+        // then
+        assertThat(throwable).hasRootCauseInstanceOf(IllegalArgumentException.class);
+    }
+
     // get
     @DisplayName("Получить книгу. Число select должно равняться 1")
     @Test
@@ -123,6 +138,23 @@ public class BookRepositoryTest {
         assertDeleteCount(0);
     }
 
+
+    // failed get
+    @DisplayName("Получить книгу с id null. Должно выбросить ошибку.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void getBookByIdNull() {
+        // when
+        Throwable throwable = catchThrowable(() -> bookRepository.findById(null));
+
+        // then
+        assertThat(throwable).hasRootCauseInstanceOf(IllegalArgumentException.class);
+    }
+
     // get all
     @DisplayName("Получить все книги. Число select должно равняться 1")
     @Test
@@ -145,6 +177,7 @@ public class BookRepositoryTest {
         assertDeleteCount(0);
 
     }
+
 
     // delete
     @DisplayName("Удалить книгу. Число delete должно равняться 1")
@@ -171,7 +204,7 @@ public class BookRepositoryTest {
     }
 
 
-    // * failed
+    // failed delete
 
     @DisplayName("Проброс Exception при удалении книги с неверным id.")
     @Test
@@ -182,14 +215,14 @@ public class BookRepositoryTest {
     })
     void throwWhenDeleteBookWithNonExistentId() {
 
-        // Then
 
         try {
-
+            // when
             bookRepository.deleteById(666L);
 
         } catch (EmptyResultDataAccessException exception) {
 
+            // then
             assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
         }
     }
