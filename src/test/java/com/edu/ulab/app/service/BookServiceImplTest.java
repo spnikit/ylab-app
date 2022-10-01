@@ -5,6 +5,7 @@ import com.edu.ulab.app.entity.Book;
 import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.repository.BookRepository;
+import com.edu.ulab.app.repository.UserRepository;
 import com.edu.ulab.app.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,9 @@ public class BookServiceImplTest {
 
     @Mock
     BookRepository bookRepository;
+
+    @Mock
+    UserRepository userRepository;
 
     @Mock
     BookMapper bookMapper;
@@ -76,6 +80,7 @@ public class BookServiceImplTest {
         //when
 
         when(bookMapper.bookDtoToBook(bookDto)).thenReturn(book);
+        when(userRepository.findById(bookDto.getUserId())).thenReturn(Optional.of(person));
         when(bookRepository.save(book)).thenReturn(savedBook);
         when(bookMapper.bookToBookDto(savedBook)).thenReturn(result);
 

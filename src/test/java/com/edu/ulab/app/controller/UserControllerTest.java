@@ -12,16 +12,15 @@ import com.edu.ulab.app.web.request.UserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class UserControllerTest {
 
 
@@ -44,6 +44,9 @@ public class UserControllerTest {
     @Autowired
     private BookServiceImpl bookService;
 
+
+
+
     @Test
     public void contextLoads() {
     }
@@ -51,9 +54,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    @Rollback
     public void testCreateUserWithBooks() {
-
 
         UserBookRequest userBookRequest = new UserBookRequest();
 
@@ -128,7 +129,7 @@ public class UserControllerTest {
 
 
         UserDto userDto = new UserDto();
-        userDto.setTitle("test");
+        userDto.setTitle("test_update");
         userDto.setAge(33);
         userDto.setFullName("petrovich");
         UserDto createdUser = userService.createUser(userDto);
@@ -171,7 +172,7 @@ public class UserControllerTest {
     public void testDeleteUserWithBooks() {
 
         UserDto userDto = new UserDto();
-        userDto.setTitle("test");
+        userDto.setTitle("test_delete");
         userDto.setAge(33);
         userDto.setFullName("petrovich");
         userDto.setId(1L);
