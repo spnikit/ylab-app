@@ -8,12 +8,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
+
 import static com.vladmihalcea.sql.SQLStatementCountValidator.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Тесты репозитория {@link BookRepository}.
@@ -39,7 +42,6 @@ public class BookRepositoryTest {
     })
     void findAllBadges_thenAssertDmlCount() {
         //Given
-
         Person person = new Person();
         person.setAge(111);
         person.setTitle("reader");
@@ -66,15 +68,163 @@ public class BookRepositoryTest {
     }
 
     // update
+    @DisplayName("Обновить книгу. Число update должно равняться 1")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void updateBook_thenAssertDmlCount() {
+        // Given
+        Book book = new Book();
+        book.setAuthor("updated author");
+        book.setTitle("updated title");
+        book.setPageCount(1000);
+        book.setId(2002L);
 
+        // When
+        Book updatedBook = bookRepository.save(book);
 
+        // Then
+        assertThat(updatedBook.getAuthor()).isEqualTo("updated author");
+        assertThat(updatedBook.getTitle()).isEqualTo("updated title");
+        assertThat(updatedBook.getPageCount()).isEqualTo(1000);
+
+        assertSelectCount(1);
+        assertInsertCount(0);
+        assertUpdateCount(0);
+        assertDeleteCount(0);
+
+    }
+
+    // failed update
+    @DisplayName("Обновить книгу c null. Должно выбросить ошибку.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void updateBookWithNull() {
+        // when
+        Throwable throwable = catchThrowable(() -> bookRepository.save(null));
+
+        // then
+        assertThat(throwable).hasRootCauseInstanceOf(IllegalArgumentException.class);
+    }
 
     // get
+    @DisplayName("Получить книгу. Число select должно равняться 1")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void getBook_thenAssertDmlCount() {
+
+        // When
+        Book book = bookRepository.findById(2002L).orElseThrow();
+
+        // Then
+        assertThat(book.getAuthor()).isEqualTo("author");
+        assertThat(book.getTitle()).isEqualTo("default book");
+        assertThat(book.getPageCount()).isEqualTo(5500);
+
+        assertSelectCount(1);
+        assertInsertCount(0);
+        assertUpdateCount(0);
+        assertDeleteCount(0);
+    }
+
+
+    // failed get
+    @DisplayName("Получить книгу с id null. Должно выбросить ошибку.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void getBookByIdNull() {
+        // when
+        Throwable throwable = catchThrowable(() -> bookRepository.findById(null));
+
+        // then
+        assertThat(throwable).hasRootCauseInstanceOf(IllegalArgumentException.class);
+    }
+
     // get all
+    @DisplayName("Получить все книги. Число select должно равняться 1")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void getAllBooks_thenAssertDmlCount() {
+
+        // When
+        List<Book> all = bookRepository.findAll();
+
+        // Then
+        assertThat(all.size()).isEqualTo(2);
+
+        assertSelectCount(1);
+        assertInsertCount(0);
+        assertUpdateCount(0);
+        assertDeleteCount(0);
+
+    }
+
+
     // delete
+    @DisplayName("Удалить книгу. Число delete должно равняться 1")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void deleteBook_thenAssertDmlCount() {
 
-    // * failed
+
+        // When
+        bookRepository.deleteById(2002L);
+        List<Book> all = bookRepository.findAll();
+
+        // Then
+        assertThat(all.size()).isEqualTo(1);
+
+        assertSelectCount(2);
+        assertInsertCount(0);
+        assertUpdateCount(0);
+        assertDeleteCount(1);
+    }
 
 
-    // example failed test
+    // failed delete
+
+    @DisplayName("Проброс Exception при удалении книги с неверным id.")
+    @Test
+    @Rollback
+    @Sql({"classpath:sql/1_clear_schema.sql",
+            "classpath:sql/2_insert_person_data.sql",
+            "classpath:sql/3_insert_book_data.sql"
+    })
+    void throwWhenDeleteBookWithNonExistentId() {
+
+
+        try {
+            // when
+            bookRepository.deleteById(666L);
+
+        } catch (EmptyResultDataAccessException exception) {
+
+            // then
+            assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-CREATE SCHEMA ulab_edu;
+CREATE SCHEMA IF NOT EXISTS ulab_edu;
 
 create table ulab_edu.person
 (
@@ -9,7 +9,7 @@ create table ulab_edu.person
     constraint pk_ulab_edu_person_id primary key (id)
 );
 
-CREATE UNIQUE INDEX idx_ulab_edu_person_title on ulab_edu.person (title);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ulab_edu_person_title on ulab_edu.person (title);
 
 comment on table ulab_edu.person is 'Справочник используется для хранения баджей';
 comment on column ulab_edu.person.id is 'Идентификатор пользователя';

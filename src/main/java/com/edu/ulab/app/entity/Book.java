@@ -1,23 +1,21 @@
 package com.edu.ulab.app.entity;
 
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "book", schema = "ulab_edu")
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
     @SequenceGenerator(name = "sequence", sequenceName = "sequence", allocationSize = 100)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false)
     private String title;
